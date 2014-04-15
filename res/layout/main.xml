@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:custom="http://schemas.android.com/apk/res/custom.fonts"
+              android:orientation="vertical"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+    >
+  <TextView
+      style="@style/Baroque"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/sample_text"
+      />
+  <!-- next view demonstrates how to specify custom:fontFamily
+       directly in layout (not in the styles.xml) -->
+  <TextView
+      style="@style/Curvaceous"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/sample_text"
+      custom:fontFamily="curvaceous_script"
+      />
+  <TextView
+      style="@style/Dagerotypos"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/sample_text"
+      />
+</LinearLayout>
+
