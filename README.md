@@ -30,3 +30,4 @@ If you have any questions/suggestions/improvements feel free to contact me at
 
 Leo.Kuznetsov@gmail.com
 
+![alt tag](https://raw.github.com/leok7v/android-textview-custom-fonts/master/screenshot.png)
