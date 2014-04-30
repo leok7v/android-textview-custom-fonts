@@ -26,5 +26,12 @@
       android:layout_height="wrap_content"
       android:text="@string/sample_text"
       />
+  <Button
+      android:id="@+id/button"
+      style="@style/Baroque"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="Sample Button"
+      />
 </LinearLayout>
 

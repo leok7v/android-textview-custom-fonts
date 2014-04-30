@@ -28,11 +28,34 @@
 */
 package custom.fonts;
 
+import android.app.AlertDialog;
+import android.view.*;
+
 public class Act extends BaseActivity {
 
     public void onCreate(android.os.Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        View v = findViewById(R.id.button);
+        if (v != null) {
+            v.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(Act.this);
+                    builder.setTitle("Title");
+                    builder.setMessage("Alert Message");
+                    builder.setPositiveButton("OK", null);
+                    builder.create();
+                    builder.show();
+                }
+            });
+        }
+
+    }
+
+    public boolean onCreateOptionsMenu(android.view.Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        return true;
     }
 
 }

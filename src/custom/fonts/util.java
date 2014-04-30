@@ -29,26 +29,47 @@
 
 package custom.fonts;
 
-public class App extends android.app.Application {
+import android.util.Log;
 
-    private static App app;
-    private CustomFontFactory factory;
+public class util {
 
-    public App() {
-        app = this;
+
+    public static String getCallersCaller() {
+        StackTraceElement st = Thread.currentThread().getStackTrace()[4];
+        return forName(st.getClassName()).getSimpleName() + "." + st.getMethodName() +
+                                ":" + st.getLineNumber() + " ";
     }
 
-    public static android.view.LayoutInflater getLayoutInflater() {
-        return app.factory.getLayoutInflater();
+    public static Class<?> forName(String n) {
+        try {
+            return n == null ? null : Class.forName(n);
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
     }
 
-    public static CustomFontFactory getCustomFontFactory() {
-        return app.factory;
+
+    public static void trace(String... params) {
+        if (params != null && params.length > 0) {
+            trace0(getCallersCaller(), params);
+        }
     }
 
-    public void onCreate() {
-        super.onCreate();
-        factory = new CustomFontFactory(this);
+
+    public static void trace0(String caller, String... params) {
+        if (params != null && params.length > 0) {
+            StringBuilder sb = new StringBuilder(params[0].length() * 2);
+            sb.append(caller).append(' ');
+            for (String p : params) {
+                if (p != null) {
+                    sb.append(p).append(' ');
+                }
+            }
+            String s = sb.toString().trim();
+            Log.d("custom.font", s);
+//          System.err.println(s);
+        }
     }
+
 
 }

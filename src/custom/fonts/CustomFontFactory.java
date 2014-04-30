@@ -29,76 +29,99 @@
 
 package custom.fonts;
 
-import android.content.*;
-import android.content.res.*;
-import android.graphics.*;
-import android.text.*;
-import android.util.*;
-import android.view.*;
-import android.widget.*;
+import android.content.Context;
+import android.content.res.TypedArray;
+import android.graphics.Typeface;
+import android.os.Handler;
+import android.text.TextUtils;
+import android.util.AttributeSet;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.TextView;
 
-import java.util.*;
+import java.util.HashMap;
+
+import static custom.fonts.util.trace;
 
 public class CustomFontFactory implements LayoutInflater.Factory2 {
 
+    private static final String DEFAULT_TYPEFACE = "baroque_script"; // default application font
     private static final String[] extensions = {"ttf", "otf"};
-    private static final String[] classPrefixes = {"android.widget.", "android.webkit."};
+    private static final String[] classPrefixes = {"android.widget.", "android.webkit.", "android.view."};
+    private static final Handler handler = new Handler();
     private final HashMap<String, Typeface> cache = new HashMap<String, Typeface>(16);
-    private final LayoutInflater inflater;
+    private static CustomFontFactory instance;
 
-    public CustomFontFactory(Context context) {
-        inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        inflater.setFactory2(this);
+    private CustomFontFactory() {
     }
 
-    public LayoutInflater getLayoutInflater() {
-        return inflater;
+    public static CustomFontFactory getInstance() {
+        if (instance == null) {
+            instance = new CustomFontFactory();
+        }
+        return instance;
     }
 
     public View setFontFamily(View view, Context context, AttributeSet attrs) {
-        if (view instanceof TextView) {
-            TextView v = (TextView)view;
-            String fontFamily = null;
+        if (context.getTheme() == null) {
+            trace("context.getTheme() == null");
+        }
+        if (view instanceof TextView && context.getTheme() != null) {
+            final TextView v = (TextView)view;
             TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.TextView, 0, 0);
-            try {
-                fontFamily = a.getString(R.styleable.TextView_fontFamily);
-                if (!v.isInEditMode() && !TextUtils.isEmpty(fontFamily)) {
-                    Typeface typeface = loadTypeface(context, fontFamily);
-                    if (typeface != null) {
-                        v.setTypeface(typeface);
+            if (a != null) {
+                try {
+                    String fontFamily = a.getString(R.styleable.TextView_fontFamily);
+                    if (fontFamily == null) {
+                        fontFamily = DEFAULT_TYPEFACE;
                     }
+                    if (!v.isInEditMode() && !TextUtils.isEmpty(fontFamily)) {
+                        final Typeface typeface = loadTypeface(context, fontFamily);
+                        if (typeface != null) {
+                            handler.post(new Runnable() {
+                                public void run() {
+                                    v.setTypeface(typeface);
+                                }
+                            });
+                        }
+                    }
+                } finally {
+                    a.recycle();
                 }
-            } finally {
-                a.recycle();
+            } else {
+                trace("obtainStyledAttributes() == null");
             }
         }
         return view;
     }
 
     public View onCreateView(View parent, String name, Context context, AttributeSet attrs) {
-        return createView(parent, name, context, attrs);
+        return createView(name, context, attrs);
     }
 
     public View onCreateView(String name, Context context, AttributeSet attrs) {
-        return createView(null, name, context, attrs);
+        return createView(name, context, attrs);
     }
 
-    private View createView(View parent, String name, Context context, AttributeSet attrs) {
-        View v = !name.contains(".") ? null : createView(inflater, name, null, attrs);
+    private View createView(String name, Context context, AttributeSet attrs) {
+        View v = !name.contains(".") ? null : create(name, null, context, attrs);
         if (v == null) {
             for (String prefix : classPrefixes) {
-                v = createView(inflater, name, prefix, attrs);
+                v = create(name, prefix, context, attrs);
                 if (v != null) {
                     break;
                 }
             }
         }
+        if (v == null) {
+            trace("failed to create " + name);
+        }
         return setFontFamily(v, context, attrs);
     }
 
-    private static View createView(LayoutInflater inflater, String name, String prefix, AttributeSet attrs) {
+    private static View create(String name, String prefix, Context context, AttributeSet attrs) {
         try {
-            return inflater.createView(name, prefix, attrs);
+            return LayoutInflater.from(context).createView(name, prefix, attrs);
         } catch (Throwable e) { // ClassNotFoundException
             return null;
         }

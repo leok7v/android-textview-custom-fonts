@@ -28,23 +28,31 @@
 */
 package custom.fonts;
 
-import android.app.*;
-import android.content.*;
-import android.util.*;
-import android.view.*;
+import android.app.Activity;
+import android.content.Context;
+import android.util.AttributeSet;
+import android.view.LayoutInflater;
+import android.view.View;
 
 public class BaseActivity extends Activity {
 
+    public void onCreate(android.os.Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        getLayoutInflater().setFactory(CustomFontFactory.getInstance());
+    }
+
     public void setContentView(int id) {
-        super.setContentView(App.getLayoutInflater().inflate(id, null));
+        View v = LayoutInflater.from(this).inflate(id, null);
+        super.setContentView(v);
     }
 
     public View onCreateView(View parent, String name, Context context, AttributeSet attrs) {
         View v = super.onCreateView(parent, name, context, attrs);
         if (v == null) {
-            App.getCustomFontFactory().onCreateView(parent, name, context, attrs);
-        } else {
-            App.getCustomFontFactory().setFontFamily(v, context, attrs);
+            CustomFontFactory.getInstance().onCreateView(parent, name, context, attrs);
+        }
+        if (v != null) {
+            CustomFontFactory.getInstance().setFontFamily(v, context, attrs);
         }
         return v;
     }
