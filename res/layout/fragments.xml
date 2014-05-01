@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:custom="http://schemas.android.com/apk/res/custom.fonts"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <fragment class="sample.app.TitlesFragment"
+            custom:fontFamily="Curvaceous"
+            android:id="@+id/titles" android:layout_weight="1"
+            android:layout_width="0px"
+            android:layout_height="match_parent" />
+
+    <FrameLayout android:id="@+id/details" android:layout_weight="1"
+            android:layout_width="0px"
+            style="@style/Curvaceous"
+            android:layout_height="match_parent" />
+
+</LinearLayout>

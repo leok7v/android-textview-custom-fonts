@@ -26,36 +26,40 @@
     OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-package custom.fonts;
+package sample.app;
 
-import android.app.AlertDialog;
+import android.os.*;
+import android.util.*;
 import android.view.*;
+import android.widget.*;
+import custom.fonts.*;
 
-public class Act extends BaseActivity {
+public class DetailsFragment extends CustomFontFragment {
 
-    public void onCreate(android.os.Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
-        View v = findViewById(R.id.button);
-        if (v != null) {
-            v.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(Act.this);
-                    builder.setTitle("Title");
-                    builder.setMessage("Alert Message");
-                    builder.setPositiveButton("OK", null);
-                    builder.create();
-                    builder.show();
-                }
-            });
-        }
-
+    public static DetailsFragment newInstance(int index) {
+        DetailsFragment f = new DetailsFragment();
+        Bundle args = new Bundle();
+        args.putInt("index", index);
+        f.setArguments(args);
+        return f;
     }
 
-    public boolean onCreateOptionsMenu(android.view.Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main_menu, menu);
-        return true;
+    public int getShownIndex() {
+        return getArguments() != null ? getArguments().getInt("index", 0) : 0;
+    }
+
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        if (container == null || getActivity() == null) {
+            return null; // Currently in a layout without a container, so no reason to create our view.
+        }
+        ScrollView scroller = (ScrollView)inflater.inflate(R.layout.details, new ScrollView(getActivity()));
+        assert scroller != null;
+        TextView text = (TextView)scroller.findViewById(R.id.details_text_view);
+        DisplayMetrics dm = getActivity().getResources().getDisplayMetrics();
+        int padding = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4, dm);
+        text.setPadding(padding, padding, padding, padding);
+        text.setText(Shakespeare.DIALOGUE[getShownIndex()]);
+        return scroller;
     }
 
 }

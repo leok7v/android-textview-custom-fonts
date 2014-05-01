@@ -26,12 +26,15 @@
       android:layout_height="wrap_content"
       android:text="@string/sample_text"
       />
+  <!-- style="@style/Curvaceous" won't work for button but font family will -->
   <Button
+      style="@style/Curvaceous"
+      custom:fontFamily="curvaceous_script"
       android:id="@+id/button"
-      style="@style/Baroque"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:text="Sample Button"
+      android:textSize="11pt"
+      android:text="Button"
       />
 </LinearLayout>
 

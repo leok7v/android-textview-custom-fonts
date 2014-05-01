@@ -14,8 +14,8 @@ it is outside of the scope of this sample.
 CustomFontFactory is a shared singleton that is used in BaseActivity.
 It does not have any provisions for thread safety thus it must be used on application main thread.
 
-This sample code is tested on Android API 11 (Honeycomb 3.0) to 19 and guaranteed not to work for
-API <= 10 (Gingerbread) see: http://en.wikipedia.org/wiki/Android_version_history
+This sample code is tested on Android API 12 (Honeycomb 3.1) to 19 and guaranteed not to work for
+API <= 11 (Honeycomb 3.0) see: http://en.wikipedia.org/wiki/Android_version_history
 
 Free fonts used in sample assets are
 http://www.fontsaddict.com/font/baroque-script.html

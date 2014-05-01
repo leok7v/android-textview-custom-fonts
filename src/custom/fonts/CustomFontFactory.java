@@ -29,70 +29,34 @@
 
 package custom.fonts;
 
+import android.app.*;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Typeface;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
-import android.view.View;
+import android.view.*;
 import android.widget.TextView;
 
-import java.util.HashMap;
+import java.util.*;
 
 import static custom.fonts.util.trace;
 
 public class CustomFontFactory implements LayoutInflater.Factory2 {
 
-    private static final String DEFAULT_TYPEFACE = "baroque_script"; // default application font
+    private static final String DEFAULT_FONT_FAMILY = "baroque_script"; // default application font
     private static final String[] extensions = {"ttf", "otf"};
     private static final String[] classPrefixes = {"android.widget.", "android.webkit.", "android.view."};
     private static final Handler handler = new Handler();
-    private final HashMap<String, Typeface> cache = new HashMap<String, Typeface>(16);
     private static CustomFontFactory instance;
+    private final LinkedList<String> fontFamilies = new LinkedList<String>();
+    private final HashMap<String, Typeface> cache = new HashMap<String, Typeface>(16);
 
-    private CustomFontFactory() {
-    }
+    private CustomFontFactory() { }
 
     public static CustomFontFactory getInstance() {
-        if (instance == null) {
-            instance = new CustomFontFactory();
-        }
-        return instance;
-    }
-
-    public View setFontFamily(View view, Context context, AttributeSet attrs) {
-        if (context.getTheme() == null) {
-            trace("context.getTheme() == null");
-        }
-        if (view instanceof TextView && context.getTheme() != null) {
-            final TextView v = (TextView)view;
-            TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.TextView, 0, 0);
-            if (a != null) {
-                try {
-                    String fontFamily = a.getString(R.styleable.TextView_fontFamily);
-                    if (fontFamily == null) {
-                        fontFamily = DEFAULT_TYPEFACE;
-                    }
-                    if (!v.isInEditMode() && !TextUtils.isEmpty(fontFamily)) {
-                        final Typeface typeface = loadTypeface(context, fontFamily);
-                        if (typeface != null) {
-                            handler.post(new Runnable() {
-                                public void run() {
-                                    v.setTypeface(typeface);
-                                }
-                            });
-                        }
-                    }
-                } finally {
-                    a.recycle();
-                }
-            } else {
-                trace("obtainStyledAttributes() == null");
-            }
-        }
-        return view;
+        return instance != null ? instance : (instance = new CustomFontFactory());
     }
 
     public View onCreateView(View parent, String name, Context context, AttributeSet attrs) {
@@ -101,6 +65,24 @@ public class CustomFontFactory implements LayoutInflater.Factory2 {
 
     public View onCreateView(String name, Context context, AttributeSet attrs) {
         return createView(name, context, attrs);
+    }
+
+    public static void attach(Activity a) { attach(a.getLayoutInflater()); }
+
+    public static void attach(Dialog d) { attach(d.getLayoutInflater()); }
+
+    public static void attach(LayoutInflater li) {
+        if (!(li.getFactory2() instanceof CustomFontFactory) && !(li.getFactory() instanceof CustomFontFactory)) {
+            li.setFactory2(getInstance());
+        }
+    }
+
+    public static void push(String defaultFontFamily) {
+        getInstance().fontFamilies.addFirst(defaultFontFamily);
+    }
+
+    public static void pop() {
+        getInstance().fontFamilies.removeFirst();
     }
 
     private View createView(String name, Context context, AttributeSet attrs) {
@@ -115,6 +97,8 @@ public class CustomFontFactory implements LayoutInflater.Factory2 {
         }
         if (v == null) {
             trace("failed to create " + name);
+        } else {
+            trace("created " + v.getClass().getCanonicalName());
         }
         return setFontFamily(v, context, attrs);
     }
@@ -127,7 +111,42 @@ public class CustomFontFactory implements LayoutInflater.Factory2 {
         }
     }
 
+    public View setFontFamily(final View v, final Context context, AttributeSet attrs) {
+        if (context.getTheme() != null && v instanceof TextView && !v.isInEditMode()) {
+            TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.TextView, 0, 0);
+            try {
+                final String ff = resolveFontFamily(
+                        a != null ? a.getString(R.styleable.TextView_fontFamily) : null, context);
+                final Typeface typeface = loadTypeface(context, ff);
+                if (typeface != null) {
+                    handler.post(new Runnable() {
+                        public void run() { ((TextView)v).setTypeface(typeface); }
+                    });
+                }
+            } finally {
+                if (a != null) { a.recycle(); }
+            }
+        }
+        return v;
+    }
+
+    private String resolveFontFamily(String ff, Context context) {
+        if (ff == null && !fontFamilies.isEmpty()) {
+            ff = fontFamilies.getFirst();
+        }
+        if (ff == null) {
+            ff = context.getResources().getString(R.string.DEFAULT_FONT_FAMILY);
+        }
+        if (ff == null) {
+            ff = DEFAULT_FONT_FAMILY;
+        }
+        return ff;
+    }
+
     private Typeface loadTypeface(Context context, String fontFamily) {
+        if (TextUtils.isEmpty(fontFamily)) {
+            return null;
+        }
         Typeface typeface = cache.get(fontFamily);
         if (typeface == null) {
             for (String ext : extensions) {

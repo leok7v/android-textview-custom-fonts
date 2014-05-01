@@ -2,4 +2,5 @@
 <resources>
   <string name="app_name">Custom Fonts</string>
   <string name="sample_text">the quick brown fox jumps over the big lazy dog</string>
+  <string name="DEFAULT_FONT_FAMILY">baroque_script</string>
 </resources>

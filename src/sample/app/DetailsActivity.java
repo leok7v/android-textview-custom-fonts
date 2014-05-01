@@ -26,35 +26,24 @@
     OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-package custom.fonts;
+package sample.app;
 
-import android.app.Activity;
-import android.content.Context;
-import android.util.AttributeSet;
-import android.view.LayoutInflater;
-import android.view.View;
+import android.app.*;
+import android.content.res.*;
+import android.os.*;
 
-public class BaseActivity extends Activity {
+public class DetailsActivity extends Activity {
 
-    public void onCreate(android.os.Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getLayoutInflater().setFactory2(CustomFontFactory.getInstance());
-    }
-
-    public void setContentView(int id) {
-        View v = LayoutInflater.from(this).inflate(id, null);
-        super.setContentView(v);
-    }
-
-    public View onCreateView(View parent, String name, Context context, AttributeSet attrs) {
-        View v = super.onCreateView(parent, name, context, attrs);
-        if (v == null) {
-            CustomFontFactory.getInstance().onCreateView(parent, name, context, attrs);
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            finish();
+            return;
         }
-        if (v != null) {
-            CustomFontFactory.getInstance().setFontFamily(v, context, attrs);
+        if (savedInstanceState == null) {
+            DetailsFragment details = new DetailsFragment();
+            details.setArguments(getIntent().getExtras());
+            getFragmentManager().beginTransaction().add(android.R.id.content, details).commit();
         }
-        return v;
     }
-
 }

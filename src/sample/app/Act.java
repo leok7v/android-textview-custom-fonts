@@ -26,35 +26,61 @@
     OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-package custom.fonts;
+package sample.app;
 
-import android.app.Activity;
-import android.content.Context;
-import android.util.AttributeSet;
-import android.view.LayoutInflater;
-import android.view.View;
+import android.app.AlertDialog;
+import android.content.*;
+import android.view.*;
+import custom.fonts.*;
 
-public class BaseActivity extends Activity {
+import static custom.fonts.util.*;
+
+public class Act extends BaseActivity {
 
     public void onCreate(android.os.Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getLayoutInflater().setFactory2(CustomFontFactory.getInstance());
-    }
-
-    public void setContentView(int id) {
-        View v = LayoutInflater.from(this).inflate(id, null);
-        super.setContentView(v);
-    }
-
-    public View onCreateView(View parent, String name, Context context, AttributeSet attrs) {
-        View v = super.onCreateView(parent, name, context, attrs);
-        if (v == null) {
-            CustomFontFactory.getInstance().onCreateView(parent, name, context, attrs);
-        }
+        redirectSystemStreams();
+        setContentView(R.layout.main);
+        View v = findViewById(R.id.button);
         if (v != null) {
-            CustomFontFactory.getInstance().setFontFamily(v, context, attrs);
+            v.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    CustomFontFactory.push("baroque_script");
+                    try {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(Act.this);
+                        builder.setTitle("Title");
+                        builder.setMessage("Alert Message");
+                        builder.setPositiveButton("OK", null);
+                        builder.create();
+                        builder.show();
+                    } finally {
+                        CustomFontFactory.pop();
+                    }
+                }
+            });
         }
-        return v;
+    }
+
+    public boolean onCreateOptionsMenu(android.view.Menu menu) {
+        getMenuInflater().inflate(R.menu.menu1, menu);
+        return true;
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.fragments: {
+                Intent intent = new Intent();
+                intent.setClass(this, Fac.class);
+                startActivity(intent);
+                break;
+            }
+            case R.id.exit:
+                finish();
+                break;
+            default: // unrecognized menu item
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 }

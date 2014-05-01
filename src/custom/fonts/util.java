@@ -31,13 +31,19 @@ package custom.fonts;
 
 import android.util.Log;
 
+import java.io.*;
+
 public class util {
 
-
-    public static String getCallersCaller() {
-        StackTraceElement st = Thread.currentThread().getStackTrace()[4];
+    public static String getCallersCaller(int n) {
+        StackTraceElement st = Thread.currentThread().getStackTrace()[n];
         return forName(st.getClassName()).getSimpleName() + "." + st.getMethodName() +
                                 ":" + st.getLineNumber() + " ";
+    }
+
+    public static String getCallersPackage(int n) {
+        StackTraceElement st = Thread.currentThread().getStackTrace()[n];
+        return forName(st.getClassName()).getPackage().getName();
     }
 
     public static Class<?> forName(String n) {
@@ -48,28 +54,83 @@ public class util {
         }
     }
 
-
     public static void trace(String... params) {
         if (params != null && params.length > 0) {
-            trace0(getCallersCaller(), params);
+            trace0(getCallersCaller(4), getCallersPackage(4), params);
         }
     }
 
-
-    public static void trace0(String caller, String... params) {
+    public static void trace0(String callerClass, String callerPackage, String... params) {
         if (params != null && params.length > 0) {
             StringBuilder sb = new StringBuilder(params[0].length() * 2);
-            sb.append(caller).append(' ');
+            sb.append(callerClass).append(' ');
             for (String p : params) {
                 if (p != null) {
                     sb.append(p).append(' ');
                 }
             }
             String s = sb.toString().trim();
-            Log.d("custom.font", s);
-//          System.err.println(s);
+            Log.d(callerPackage, s);
         }
     }
 
+    private static String lineSeparator = System.getProperty("line.separator");
+    private static int lineSeparatorChar = lineSeparator.charAt(0);
+
+    public static void redirectSystemStreams() {
+        if (lineSeparator.length() != 1) {
+            throw new Error("it might not work on Windows CR/LF");
+        }
+        System.setOut(new LogPrintStream(new LogOutputStream(), System.out));
+        System.setErr(new LogPrintStream(new LogOutputStream(), System.err));
+        System.err.println("Hello World");
+        System.err.println("System.err=" + System.err.hashCode());
+    }
+
+    private static class LogPrintStream extends PrintStream {
+
+        private PrintStream second;
+
+        public LogPrintStream(OutputStream out, PrintStream was) {
+            super(out);
+            second = was;
+        }
+
+        public void write(int ch)  {
+            super.write(ch);
+            second.write(ch);
+        }
+
+    }
+
+    private static class LogOutputStream extends OutputStream {
+
+        private CharArrayWriter saw = new CharArrayWriter(1024);
+
+        public LogOutputStream() { }
+
+        public void write(int ch) throws IOException {
+            if (ch != lineSeparatorChar) {
+                saw.write(ch);
+            } else {
+                int n = 4; // variable depth of calls inside java.io.* packages
+                StackTraceElement[] s = Thread.currentThread().getStackTrace();
+                for (int i = n; i < s.length; i++) {
+                    if ("java.io".equals(forName(s[i-1].getClassName()).getPackage().getName()) &&
+                       !"java.io".equals(forName(s[i].getClassName()).getPackage().getName())) {
+                        n = i;
+                        break;
+                    }
+                }
+                StackTraceElement st = Thread.currentThread().getStackTrace()[n];
+                Class cls = forName(st.getClassName());
+                String pkg = cls.getPackage().getName();
+                String caller = cls.getSimpleName() + "." + st.getMethodName() + ":" + st.getLineNumber() + " ";
+                trace0(caller, pkg, saw.toString());
+                saw.reset();
+            }
+        }
+
+    }
 
 }
